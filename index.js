@@ -1,63 +1,77 @@
+'use strict';
 function Fen (all) {
     var self = this;
 
     //获取配置值
     this._el = all.el;
+    this._dom = document.querySelector(this._el);
     this._data = all.data || {};
     this._methods = all.methods || {};
-
-    //遍历DOM节点, 页面内可能会有多个模板
-    this.getDomList = function (el) {
-        if (el) {
-            Array.prototype.forEach.call(document.querySelectorAll(el), function (dom) {
-                self.getDom(dom.children);
-            });
-        } else {
-            console.error('error: 请设置--el');
-        }
-    };
+    this._markList = [];
+    this._dependList = {};
 
     //遍历dom树，解析模板
     this.getDom = function (domList) {
         Array.prototype.forEach.call(domList || [], function (dom) {
-            self.getAttr(dom.attributes);
-
-            defineProperty(dom, 'value', function (newValue) {
-                console.log(newValue);
-            });
+            self.getAttr(dom);
             self.getDom(dom.children);
         });
     };
 
-    this.getAttr = function (attributes) {
-        if (attributes && attributes.length) {
-            for (var i in attributes) {
-                var attr = attributes[i];
+    this.getAttr = function (dom) {
+        if (dom.hasAttribute('f-model')) {
+            let attr = dom.getAttribute('f-model');
 
-                if (attr.name === 'f-model') {
-                    defineProperty(self._data, attr.name, function (newValue) {
+            dom.addEventListener('input', function (e) {
+                (self._dependList[attr] || []).forEach(function (fn) {
+                    self._data[attr] = dom.value;
+                });
+            });
 
-                    });
-                }
-            }
+            defineProperty(self._data, attr);
+        } else if (dom.hasAttribute('f-text')) {
+            let attr = dom.getAttribute('f-text');
+
+            if (!(self._dependList[attr] instanceof Array)) self._dependList[attr] = [];
+            self._dependList[attr].push(function () {
+                dom.innerHTML = self._data[attr];
+            });
         }
     };
 
-    //获取模板
-    this.getDomList(this._el);
-}
+    //将data用Object.defineProperty代理一遍
+    function defineProperty(data, attr) {
+        let val = '';
 
-//将data用Object.defineProperty代理一遍
-function defineProperty (data, i, fn) {
-    Object.defineProperty(data, i, {
-        set: fn
-    });
+        Object.defineProperty(data, attr, {
+            get: function () {
+                return val;
+            },
+
+            set: function (newValue) {
+                val = newValue;
+                (self._dependList[attr] || []).forEach(function (fn) {
+                     fn();
+                });
+            }
+        });
+    }
+
+    this._init = function (self) {
+        if (self._el) {
+            self.getDom(this._dom.children);
+        } else {
+            console.error('error: 没有设置 el');
+        }
+    };
+
+    this._init(this);
 }
 
 new Fen({
     el: '.main',
     data: {
-        name: ''
+        title: ''
     },
     methods: {
 
