@@ -18,7 +18,7 @@ function Fen (all) {
             console.log(1111);
         },
         'f-text': function () {
-
+            console.log(2222);
         },
         'f-repeat': function () {
 
