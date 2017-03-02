@@ -15,7 +15,7 @@ function Fen (all) {
 
     this._markList = {
         'f-model': function () {
-
+            console.log(1111);
         },
         'f-text': function () {
 
