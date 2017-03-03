@@ -83,7 +83,47 @@ function Fen (all) {
     this._init(this);
 }
 
-let fen =new Fen({
+// 注册新的标签
+Fen.prototype.addAtter =  attr => {
+
+};
+
+/**
+ * 定义內建标签
+ * name:模块名称
+ * fn:返回模块对象
+ * */
+
+Fen.define = (name, fn) => {
+    this.modelList = this.modelList || [];
+    let modelList = this.modelList;
+
+    // 获取依赖的列表
+    let fnString = fn.toString(),
+        defendString = fnString.substring(fnString.indexOf('(') + 1, fnString.indexOf(')')),
+        defineList = defendString.split(',');
+
+    // 是否查找到了依赖模块
+    let hasModel = true;
+
+    defineList.map(function (name) {
+        if (modelList[name]) {
+
+            return modelList[name]
+        } else {
+            hasModel = false;
+            Fen.error('没有查找到依赖的模块');
+        }
+    });
+
+    if (hasModel) modelList[name] = fn.apply(this, defineList);
+};
+
+Fen.error = msg => {
+    console.error('Error:' + msg);
+};
+
+let fen = new Fen({
     el: '.main',
     data: {
         title: ''
