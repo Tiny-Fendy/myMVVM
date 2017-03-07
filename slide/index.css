@@ -1,0 +1,181 @@
+ul,
+li,
+img,
+p,
+span,
+div,
+body,
+a {
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    list-style: none;
+}
+
+
+
+.slide-show {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.slide-show .fade {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    opacity: 0.6;
+}
+
+.slide-show .container {
+    position: relative;
+    right: auto;
+    left: auto;
+    width: 988px;
+    height: 540px;
+    margin: 100px auto;
+    padding: 30px;
+    background-color: #000;
+}
+
+.container .img-main {
+    position: relative;
+    width: 768px;
+    height: 540px;
+    float: left;
+    overflow: hidden;
+}
+
+.container .img-main ul {
+    position: relative;
+    width: auto;
+    height: 540px;
+}
+
+.img-main ul li {
+    width: 768px;
+    float: left;
+}
+
+.container .img-main img {
+    max-width: 768px;
+    height: 540px;
+}
+
+.container .img-main p {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #9a9a9a;
+    letter-spacing: -1px;
+}
+
+.container .img-main p span:first-child {
+    color: #fff;
+}
+
+.container .img-main .arrow {
+    position: absolute;
+    top: 240px;
+    width: 34px;
+    height: 60px;
+    display: block;
+}
+
+.container .img-main .arrow.left {
+    left: 20px;
+    background: url("img/left-white.png") no-repeat;
+}
+
+.container .img-main .arrow.left:hover {
+    background: url("img/left-green.png") no-repeat;
+}
+
+.container .img-main .arrow.right {
+    right: 20px;
+    background: url("img/right-white.png") no-repeat;
+}
+
+.container .img-main .arrow.right:hover {
+    background: url("img/right-green.png") no-repeat;
+}
+
+.container .img-list {
+    height: 540px;
+    float: right;
+}
+
+.container .img-list,
+.img-list ul  li img {
+    width: 200px;
+}
+
+.img-list .btn {
+    position: relative;
+    height: 25px;
+    border-radius: 3px;
+    display: block;
+}
+
+.img-list .btn.top {
+    background: url("img/top-black.png") no-repeat;
+}
+
+.img-list .btn.top:hover {
+    background: url("img/top-green.png") no-repeat;
+}
+
+.img-list .btn.bom {
+    background: url("img/bom-black.png") no-repeat;
+}
+
+.img-list .btn.bom:hover {
+    background: url("img/bom-green.png") no-repeat;
+}
+
+.img-list .list-container {
+    position: relative;
+    margin: 10px 0;
+    height: 470px;
+    overflow: hidden;
+}
+
+.img-list ul {
+    position: absolute;
+    top: 0;
+    height: auto;
+}
+
+.img-list ul li {
+    position: relative;
+    height: 150px;
+}
+
+.img-list ul li:not(:first-child) {
+    margin-top: 10px;
+}
+
+.img-list ul li img {
+    position: absolute;
+    top: 0;
+    height: 150px;
+}
+
+.img-list ul li.active:after {
+    content: ' ';
+    position: absolute;
+    top: 0;
+    display: block;
+    width: 200px;
+    height: 150px;
+    box-shadow: inset 0 0 0 3px #ff8c25;
+}
+
+.cp {
+    cursor: pointer;
+}
