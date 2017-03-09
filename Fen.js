@@ -36,10 +36,10 @@
                 // Element节点解析
                 self.getAttr(dom, data);
                 self._getDom(dom.children, data);
-            } else {
+            } else if (dom.childNodes.length) {
 
-                // Text节点解析
-                self.getAttr(dom, data);
+                // Text节点{{}}模板解析
+                self.compileText(dom.childNodes[0], data);
             }
         });
     };
@@ -51,6 +51,14 @@
                 self._directiveList[i](dom, dom.getAttribute(i), data);
             }
         }
+    };
+
+    F.prototype.compileText = (text, data) => {
+        let tem = text.textContent.split(/{{(.*?)}}/);
+
+
+        tem = tem.map((item, i) => i % 2 ? data[item] || '' : item).join('');
+        console.log(tem);
     };
 
     //将data用Object.defineProperty代理一遍
@@ -108,6 +116,8 @@
     });
 
     self.directive('f-if', (dom, attr, data) => {
+
+
         self.registerDataChange('attr', data[attr] ? dom.style.display = true : dom.remove());
     });
 
