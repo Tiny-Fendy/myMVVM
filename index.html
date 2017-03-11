@@ -9,8 +9,10 @@
 <div class="main">
     <form>
         <input type="text" f-model="title">
-        <input type="text" f-model="title">
-        <span f-text="title">1111</span>
+        <input type="text" f-model="fun">
+        |||||||||||
+        <span>1111+{{title}}+{{fun}}</span>
+        {{title}}
     </form>
     <ul>
         <li f-for="num in items"><span>{{num}}</span></li>
