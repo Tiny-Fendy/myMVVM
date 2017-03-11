@@ -4,7 +4,9 @@ let fen = new Fen({
     data: {
         title: 44444,
         fun: 'aaaaaaa',
-        list: false,
+        list: {
+            a: 'hahaha'
+        },
         items: [1,2,3,4],
         num: 111
     },

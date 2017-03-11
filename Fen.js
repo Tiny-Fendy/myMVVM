@@ -61,12 +61,12 @@
             if (i % 2) {
 
                 // 如果存在{{}}那么中间的值一定存在于数组的奇数位元素中
-                self.registerDataChange(item, () => {
-                    tem[i] = data[item];
+                self.registerDataChange(data, item, () => {
+                    tem[i] = self._getCompileValue(item, data);
                     dom.nodeValue = tem.join('');
                 });
 
-                return data[item];
+                return self._getCompileValue(item, data);
             } else {
 
                 return  item;
@@ -74,16 +74,45 @@
         });
     };
 
+    // 解析指令中的“.”表达式, 返回data中的值
+    F.prototype._getCompileValue = (value, data) => {
+        if (value.includes('.')) {
+            let valList = value.split('.');
+
+            return valList.reduce((obj, val) => {
+                return obj[val];
+            }, data);
+        } else {
+
+            return data[value];
+        }
+    };
+
+    // 解析指令中的“.”表达式, 返回data中的值
+    F.prototype._setCompileValue = (value, data, newValue) => {
+        if (value.includes('.')) {
+            let valList = value.split('.'),
+                then = valList.slice(0, -1).reduce((obj, val) => {
+
+                    return obj[val];
+                }, data);
+
+            then[valList[valList.length - 1]] = newValue;
+        } else {
+            data[value] = newValue;
+        }
+    };
+
     //将data用Object.defineProperty代理一遍
     F.prototype._defineProperty = (data, attr) => {
         let val = data[attr];
 
         Object.defineProperty(data, attr, {
-            get: function () {
+            get () {
                 return val;
             },
 
-            set: function (newValue) {
+            set (newValue) {
                 if (val === newValue) return false;
                 val = newValue;
                 self._dependList[attr].forEach(fn => fn(val));
@@ -93,15 +122,16 @@
 
     /**
      * 注册data变化后对应的执行队列
+     * data：当前作用域下的data
      * attr: 注册的标签
      * fn: data变化后执行的回调
      * */
 
-    F.prototype.registerDataChange =  (attr, fn) => {
+    F.prototype.registerDataChange =  (data, attr, fn) => {
         if (!(self._dependList[attr] instanceof Array)) self._dependList[attr] = [];
         if (typeof fn === 'function') {
             self._dependList[attr].push(fn);
-            fn(self._data[attr] || '');
+            fn(self._getCompileValue(attr, data) || '');
         }
     };
 
@@ -118,14 +148,13 @@
     // 指令列表
     F.prototype._directiveList = {
         'f-model': (dom, attr, data) => {
-            dom.addEventListener('input', () => (self._dependList[attr] || []).forEach(() => data[attr] = dom.value));
-            self.registerDataChange(attr, () => dom.value = data[attr]);
-            dom.value = data[attr];
+            dom.addEventListener('input', () => (self._dependList[attr] || []).forEach(() => self._setCompileValue(attr, data, dom.value)));
+            self.registerDataChange(data, attr, () => dom.value = self._getCompileValue(attr, data));
             self._defineProperty(data, attr);
         },
 
         'f-text': (dom, attr, data) => {
-            self.registerDataChange(attr, () => dom.innerHTML = data[attr]);
+            self.registerDataChange(data, attr, () => dom.innerHTML = self._getCompileValue(attr, data));
         }
     };
 
@@ -137,11 +166,11 @@
      * */
 
     self.directive('f-show', (dom, attr, data) => {
-        self.registerDataChange('attr', () => data[attr] ? dom.style.display = '' : dom.style.display = 'none');
+        self.registerDataChange(data, 'attr', () => data[attr] ? dom.style.display = '' : dom.style.display = 'none');
     });
 
     self.directive('f-if', (dom, attr, data) => {
-        self.registerDataChange('attr', data[attr] ? dom.style.display = true : dom.remove());
+        self.registerDataChange(data, 'attr', data[attr] ? dom.style.display = true : dom.remove());
     });
 
     // Todo: 监控数组的变动
