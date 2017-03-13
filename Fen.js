@@ -116,8 +116,6 @@
     });
 
     self.directive('f-if', (dom, attr, data) => {
-
-
         self.registerDataChange('attr', data[attr] ? dom.style.display = true : dom.remove());
     });
 
