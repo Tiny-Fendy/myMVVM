@@ -176,17 +176,17 @@
      * data：作用域中的data
      * */
 
-    self.directive('f-show', (dom, attr, data) => {
-        self.registerDataChange(data, 'attr', () => data[attr] ? dom.style.display = '' : dom.style.display = 'none');
+    self.directive('f-show', (dom, attrVal, data) => {
+        self.registerDataChange(data, 'attr', () => self._getCompileValue(attrVal, data) ? dom.style.display = '' : dom.style.display = 'none');
     });
 
-    self.directive('f-if', (dom, attr, data) => {
-        self.registerDataChange(data, 'attr', data[attr] ? dom.style.display = true : dom.remove());
+    self.directive('f-if', (dom, attrVal, data) => {
+        self.registerDataChange(data, 'attr', self._getCompileValue(attrVal, data) ? dom.style.display = true : dom.remove());
     });
 
     // Todo: 监控数组的变动
-    self.directive('f-for', (dom, attr, data) => {
-        let attrString = attr.split('in'),
+    self.directive('f-for', (dom, attrVal, data) => {
+        let attrString = attrVal.split('in'),
             item = attrString[0].replace(/\s/g, ''),
             items = attrString[1].replace(/\s/g, '');
 
@@ -215,6 +215,11 @@
             F.error('f-for：遍历的数据格式不正确！');
         }
 
+    });
+
+    // f-on，绑定DOM事件
+    self.directive('f-on', (dom, attrVal, data) => {
+            
     });
 
     /**
