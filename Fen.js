@@ -103,14 +103,22 @@
 
     //将data用Object.defineProperty代理一遍
     F.prototype._defineProperty = (data, attr) => {
-        let attrList = attr.split('.');
+        let observerObj = {},
+            obj = '',
+            val = '';
+
         if (attr.includes('.')) {
-            eval('data' + attrList.slice(0, -1).join(''));
+            let attrList = attr.split('.');
+            observerObj = eval('data.' + attrList.slice(0, -1).join(''));
+            obj = attrList[attrList.length - 1];
+            val = eval('data.' + attr);
+        } else {
+            observerObj = data;
+            obj = attr;
+            val = data[attr];
         }
 
-        let val = data[attr];
-
-        Object.defineProperty(data, attr, {
+        Object.defineProperty(observerObj, obj, {
             get () {
                 return val;
             },
@@ -178,10 +186,16 @@
 
     // Todo: 监控数组的变动
     self.directive('f-for', (dom, attr, data) => {
-        let item = attr.split('in')[0].replace(/\s/g, ''),
-            items = data[attr.split('in')[1].replace(/\s/g, '')];
+        let attrString = attr.split('in'),
+            item = attrString[0].replace(/\s/g, ''),
+            items = attrString[1].replace(/\s/g, '');
 
         dom.removeAttribute('f-for');
+        if (items.includes('.') || items.includes('[')) {
+            items = eval('data.' + items);
+        } else {
+            items = data[items];
+        }
         if (items instanceof Array) {
             items.forEach((val, i) => {
                 let node = dom.cloneNode(true);
