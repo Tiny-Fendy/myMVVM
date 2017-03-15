@@ -12,8 +12,8 @@ let fen = new Fen({
         num: 111
     },
     methods: {
-        show() {
-            console.log(this);
+        show($event) {
+            console.log($event);
         }
     }
 });

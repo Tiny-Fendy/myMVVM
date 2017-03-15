@@ -20,7 +20,7 @@
         <br>
         <span f-if="false">1+{{title}}+{{fun}}</span>
         {{list.a}}
-        <a type="button" v-on:click="show()"></a>
+        <a type="button" v-on:click="show($event)">点击这里</a>
     </form>
     <ul>
         <li f-for="num in list.items"><span>{{num}}</span></li>

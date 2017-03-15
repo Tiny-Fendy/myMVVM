@@ -46,13 +46,15 @@
 
     // 获取dom中的指令并解析
     F.prototype._getAttr = (dom, data) => {
-        for (let i in self._directiveList) {
-            if (self._directiveList.hasOwnProperty(i) && dom.hasAttribute(i)) {
-                self._directiveList[i](dom, dom.getAttribute(i), data);
-            } else if () {
+        if (dom.attributes.length) Array.prototype.forEach.call(dom.attributes, attr => {
+            let name = attr.name;
 
+            if (name.includes('v-on')) {
+                self._onEvent(dom, attr, data);
+            } else if (self._directiveList.hasOwnProperty(name)) {
+                self._directiveList[name](dom, attr.value, data);
             }
-        }
+        });
     };
 
     // 编译文本节点中的{{}}模板
@@ -91,6 +93,8 @@
     F.prototype._setCompileValue = (value, data, newValue) => {
         if (value.includes('.') || value.includes('[')) {
             eval('data.' + value + '= newValue');
+
+            // 用字符串解析的方式解析嵌套表达式
             /*let valList = value.split('.'),
                 then = valList.slice(0, -1).reduce((obj, val) => {
 
@@ -129,6 +133,23 @@
                 if (val === newValue) return false;
                 val = newValue;
                 self._dependList[attr].forEach(fn => fn(val));
+            }
+        });
+    };
+
+    F.prototype._onEvent = (dom, attr, data) => {
+        let event = attr.name.split(':')[1], // 事件名称
+            attrSplit = attr.value.split(/\(|,|\)/),
+            method = attrSplit[0], // 方法名称
+            inputList = attrSplit.slice(1, -1); // 入参列表
+
+        dom.addEventListener(event, e => {
+            if (self._methods.hasOwnProperty(method)) {
+                if (inputList.includes('$event')) {
+                    self._methods[method](e);
+                }
+            } else {
+                F.error('找不到方法--' + method);
             }
         });
     };
