@@ -49,6 +49,8 @@
         for (let i in self._directiveList) {
             if (self._directiveList.hasOwnProperty(i) && dom.hasAttribute(i)) {
                 self._directiveList[i](dom, dom.getAttribute(i), data);
+            } else if () {
+
             }
         }
     };
@@ -219,7 +221,7 @@
 
     // f-on，绑定DOM事件
     self.directive('f-on', (dom, attrVal, data) => {
-            
+
     });
 
     /**

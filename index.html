@@ -5,14 +5,22 @@
     <title>Document</title>
 </head>
 <body>
-
+<style>
+    a {
+        width: 36px;
+        height: 20px;
+        display: block;
+    }
+</style>
 <div class="main">
     <form>
         <input type="text" f-model="list.a">
         <input type="text" f-model="fun">
         |||||||||||
-        <span f-if="false">1111+{{title}}+{{fun}}</span>
+        <br>
+        <span f-if="false">1+{{title}}+{{fun}}</span>
         {{list.a}}
+        <a type="button" v-on:click="show()"></a>
     </form>
     <ul>
         <li f-for="num in list.items"><span>{{num}}</span></li>
