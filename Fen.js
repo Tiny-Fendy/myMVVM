@@ -50,7 +50,7 @@
             let name = attr.name;
 
             if (name.includes('v-on')) {
-                self._onEvent(dom, attr, data);
+                self._directiveList.on(dom, attr, data);
             } else if (self._directiveList.hasOwnProperty(name)) {
                 self._directiveList[name](dom, attr.value, data);
             }
@@ -137,23 +137,6 @@
         });
     };
 
-    F.prototype._onEvent = (dom, attr, data) => {
-        let event = attr.name.split(':')[1], // 事件名称
-            attrSplit = attr.value.split(/\(|,|\)/),
-            method = attrSplit[0], // 方法名称
-            inputList = attrSplit.slice(1, -1); // 入参列表
-
-        dom.addEventListener(event, e => {
-            if (self._methods.hasOwnProperty(method)) {
-                if (inputList.includes('$event')) {
-                    self._methods[method](e);
-                }
-            } else {
-                F.error('找不到方法--' + method);
-            }
-        });
-    };
-
     /**
      * 注册data变化后对应的执行队列
      * data：当前作用域下的data
@@ -228,7 +211,6 @@
                     [item]: val
                 });
 
-                // 判断是不是最后一个子节点, 不是--是
                 dom.parentNode.insertBefore(node, dom);
             });
 
@@ -237,12 +219,29 @@
         } else {
             F.error('f-for：遍历的数据格式不正确！');
         }
-
     });
 
-    // f-on，绑定DOM事件
-    self.directive('f-on', (dom, attrVal, data) => {
+    // f-on，绑定DOM事件，PS：第二个参数是值属性对象而不是其他指令的属性值
+    self.directive('on', (dom, attr, data) => {
+        let event = attr.name.split(':')[1], // 事件名称
+            attrSplit = attr.value.split(/\(|,|\)/),
+            method = attrSplit[0], // 方法名称
+            inputList = attrSplit.slice(1, -1); // 入参列表
 
+        dom.addEventListener(event, e => {
+            if (self._methods.hasOwnProperty(method)) {
+                if (inputList.includes('$event')) {
+
+                    // 解析入参，1-number、2-string、3-直接变量、4-嵌套变量、5-$event
+                    inputList.map(input => {
+
+                    });
+                    self._methods[method].call(self, e);
+                }
+            } else {
+                F.error('找不到方法--' + method);
+            }
+        });
     });
 
     /**

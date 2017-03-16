@@ -13,7 +13,7 @@ let fen = new Fen({
     },
     methods: {
         show($event) {
-            console.log($event);
+            $event.target.innerHTML = this.data.list.a;
         }
     }
 });
