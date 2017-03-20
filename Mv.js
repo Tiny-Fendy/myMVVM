@@ -183,7 +183,11 @@
      * */
 
     self.directive('f-show', (dom, attrVal, data) => {
-        self.registerDataChange(data, 'attr', () => self._getCompileValue(attrVal, data) ? dom.style.display = '' : dom.style.display = 'none');
+        self.registerDataChange(data, 'attr', () => dom.style.display = self._getCompileValue(attrVal, data) ? '' : 'none');
+    });
+
+    self.directive('f-hide', (dom, attrVal, data) => {
+        self.registerDataChange(data, 'attr', () => dom.style.display = self._getCompileValue(attrVal, data) ? 'none' : '');
     });
 
     self.directive('f-if', (dom, attrVal, data) => {
@@ -294,5 +298,5 @@
         console.log(11111);
     });
 
-    window.Fen = F;
+    window.Mv = Mv;
 })();

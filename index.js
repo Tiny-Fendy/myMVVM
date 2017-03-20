@@ -1,5 +1,5 @@
 'use strict';
-let fen = new Fen({
+let fen = new Mv({
     el: '.main',
     data: {
         title: 44444,
