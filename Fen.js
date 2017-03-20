@@ -1,13 +1,13 @@
 'use strict';
 
 (function () {
-    function F (all) {
+    function Mv (all) {
         this._init(all);
     }
 
-    let self = F.fn = F.prototype;
+    let self = Mv.fn = Mv.prototype;
 
-    F.prototype._init = all => {
+    Mv.prototype._init = all => {
 
         //获取配置值
         self._el = all.el;
@@ -27,7 +27,7 @@
     };
 
     //遍历dom树，解析模板
-    F.prototype._getDom = (template, data) => {
+    Mv.prototype._getDom = (template, data) => {
 
         // 浅度复制数组，防止DOM实时变动带来的影响
         let domList = Array.prototype.slice.call(template.childNodes, 0);
@@ -45,7 +45,7 @@
     };
 
     // 获取dom中的指令并解析
-    F.prototype._getAttr = (dom, data) => {
+    Mv.prototype._getAttr = (dom, data) => {
         if (dom.attributes.length) Array.prototype.forEach.call(dom.attributes, attr => {
             let name = attr.name;
 
@@ -58,7 +58,7 @@
     };
 
     // 编译文本节点中的{{}}模板
-    F.prototype._compileText = (dom, data) => {
+    Mv.prototype._compileText = (dom, data) => {
         let tem = dom.textContent.split(/{{(.*?)}}/);
 
         if (tem.length > 1) tem = tem.map((item, i) => {
@@ -79,7 +79,7 @@
     };
 
     // 解析指令中的表达式, 返回data中的值
-    F.prototype._getCompileValue = (value, data) => {
+    Mv.prototype._getCompileValue = (value, data) => {
         if (value.includes('.') || value.includes('[')) {
 
             return eval('data.' + value);
@@ -90,7 +90,7 @@
     };
 
     // 解析指令中的表达式, 返回data中的值
-    F.prototype._setCompileValue = (value, data, newValue) => {
+    Mv.prototype._setCompileValue = (value, data, newValue) => {
         if (value.includes('.') || value.includes('[')) {
             eval('data.' + value + '= newValue');
 
@@ -108,7 +108,7 @@
     };
 
     //将data用Object.defineProperty代理一遍
-    F.prototype._defineProperty = (data, attr) => {
+    Mv.prototype._defineProperty = (data, attr) => {
         let observerObj = {},
             obj = '',
             val = '';
@@ -144,7 +144,7 @@
      * fn: data变化后执行的回调
      * */
 
-    F.prototype.registerDataChange =  (data, attr, fn) => {
+    Mv.prototype.registerDataChange =  (data, attr, fn) => {
         if (!(self._dependList[attr] instanceof Array)) self._dependList[attr] = [];
         if (typeof fn === 'function') {
             self._dependList[attr].push(fn);
@@ -158,12 +158,12 @@
      * fn: 检测到标签时执行的回调函数
      * */
 
-    F.prototype.directive =  (attr, fn) => {
+    Mv.prototype.directive =  (attr, fn) => {
         if (!self._directiveList.hasOwnProperty(attr)) self._directiveList[attr] = fn;
     };
 
     // 指令列表
-    F.prototype._directiveList = {
+    Mv.prototype._directiveList = {
         'f-model': (dom, attr, data) => {
             dom.addEventListener('input', () => (self._dependList[attr] || []).forEach(() => self._setCompileValue(attr, data, dom.value)));
             self.registerDataChange(data, attr, () => dom.value = self._getCompileValue(attr, data));
@@ -217,7 +217,7 @@
             // 去掉自身，防止多出一个
             dom.remove();
         } else {
-            F.error('f-for：遍历的数据格式不正确！');
+            Mv.error('f-for：遍历的数据格式不正确！');
         }
     });
 
@@ -239,7 +239,7 @@
                     self._methods[method].call(self, e);
                 }
             } else {
-                F.error('找不到方法--' + method);
+                Mv.error('找不到方法--' + method);
             }
         });
     });
@@ -251,9 +251,9 @@
      * fn:返回模块对象
      * */
 
-    F.define = (name, fn) => {
-        F.define.modelList = F.define.modelList || {};
-        let modelList = F.define.modelList;
+    Mv.define = (name, fn) => {
+        Mv.define.modelList = Mv.define.modelList || {};
+        let modelList = Mv.define.modelList;
 
         // 获取依赖的列表
         let fnString = fn.toString().split('=>')[0];
@@ -274,7 +274,7 @@
                     return modelList[model];
                 } else {
                     hasModel = false;
-                    F.error('没有查找到依赖的模块');
+                    Mv.error('没有查找到依赖的模块');
                 }
             });
 
@@ -284,13 +284,13 @@
         }
     };
 
-    F.error = msg => {
+    Mv.error = msg => {
         console.error('Error:' + msg);
     };
 
-    F.define('self',  () => F.prototype);
+    Mv.define('self',  () => Mv.prototype);
 
-    F.define('init', self => {
+    Mv.define('init', self => {
         console.log(11111);
     });
 
