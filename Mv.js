@@ -115,6 +115,7 @@
 
         if (attr.includes('.')) {
             let attrList = attr.split('.');
+
             observerObj = eval('data.' + attrList.slice(0, -1).join(''));
             obj = attrList[attrList.length - 1];
             val = eval('data.' + attr);
@@ -194,7 +195,6 @@
         self.registerDataChange(data, 'attr', self._getCompileValue(attrVal, data) ? dom.style.display = true : dom.remove());
     });
 
-    // Todo: 监控数组的变动
     self.directive('f-for', (dom, attrVal, data) => {
         let attrString = attrVal.split('in'),
             item = attrString[0].replace(/\s/g, ''),
@@ -225,7 +225,7 @@
         }
     });
 
-    // f-on，绑定DOM事件，PS：第二个参数是值属性对象而不是其他指令的属性值
+    // f-on，绑定DOM事件，PS：第二个参数是dom属性对象而不是的属性值,有别于其他标签
     self.directive('on', (dom, attr, data) => {
         let event = attr.name.split(':')[1], // 事件名称
             attrSplit = attr.value.split(/\(|,|\)/),
@@ -234,14 +234,29 @@
 
         dom.addEventListener(event, e => {
             if (self._methods.hasOwnProperty(method)) {
-                if (inputList.includes('$event')) {
 
-                    // 解析入参，1-number、2-string、3-直接变量、4-嵌套变量、5-$event
-                    inputList.map(input => {
+                // 解析入参，1-number、2-string、3-直接变量、4-嵌套变量、5-$event
+                inputList.map(input => {
+                    if (typeof input === 'number') {
+                        return input;
+                    } else if (input === '$event') {
+                        return e;
+                    } else if (input[0] === '\'' || input[0] === '\"') {
+                        let start = input[0],
+                            end = input.substr(-1);
 
-                    });
-                    self._methods[method].call(self, e);
-                }
+                        // 开头结尾均是'或者"，则为字符串
+                        if (start === '\'' && start === '\'') {
+                            return input.split('\'')[1];
+                        } else if (start === '\"' && start === '\"') {
+                            return input.split('\"')[1];
+                        }
+                    } else {
+                        return input;
+                    }
+                });
+                console.log(inputList);
+                self._methods[method].apply(self, inputList);
             } else {
                 Mv.error('找不到方法--' + method);
             }

@@ -13,7 +13,8 @@ let fen = new Mv({
     },
     methods: {
         show($event) {
-            $event.target.innerHTML = this.data.list.a;
+            // $event.target.innerHTML = this.data.list.a;
+            console.log(arguments);
         }
     }
 });
