@@ -310,7 +310,7 @@
     Mv.define('self',  () => Mv.prototype);
 
     Mv.define('directive', () => {
-            
+
     });
 
     Mv.define('init', self => {
