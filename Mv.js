@@ -235,10 +235,12 @@
         dom.addEventListener(event, e => {
             if (self._methods.hasOwnProperty(method)) {
 
-                // 解析入参，1-number、2-string、3-直接变量、4-嵌套变量、5-$event
-                inputList.map(input => {
-                    if (typeof input === 'number') {
-                        return input;
+                // 解析入参，1-number、2-$event、3-string、4-直接变量、5-嵌套变量
+                inputList = inputList.map(input => {
+                    input = input.replace(' ', '');
+
+                    if (!isNaN(Number(input))) {
+                        return Number(input);
                     } else if (input === '$event') {
                         return e;
                     } else if (input[0] === '\'' || input[0] === '\"') {
@@ -246,16 +248,16 @@
                             end = input.substr(-1);
 
                         // 开头结尾均是'或者"，则为字符串
-                        if (start === '\'' && start === '\'') {
+                        if (start === '\'' && end === '\'') {
                             return input.split('\'')[1];
-                        } else if (start === '\"' && start === '\"') {
+                        } else if (start === '\"' && end === '\"') {
                             return input.split('\"')[1];
                         }
                     } else {
-                        return input;
+                        return self._getCompileValue(input, data);
                     }
                 });
-                console.log(inputList);
+
                 self._methods[method].apply(self, inputList);
             } else {
                 Mv.error('找不到方法--' + method);
