@@ -192,9 +192,20 @@
     });
 
     Mv.directive('f-if', (dom, attrVal, data) => {
-        
-        self.registerDataChange(data, 'attr', self._getCompileValue(attrVal, data) ? dom.style.display = true : dom.remove());
 
+        // 记录节点
+        let fragment = document.createDocumentFragment();
+        fragment.appendChild(dom);
+
+        self.registerDataChange(data, 'attr', () => {
+            if (self._getCompileValue(attrVal, data)) {
+
+                // 导入dom
+
+            } else {
+                dom.remove();
+            }
+        });
 
     });
 
