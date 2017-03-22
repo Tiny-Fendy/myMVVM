@@ -4,6 +4,7 @@ let fen = new Mv({
     data: {
         title: 44444,
         fun: 'aaaaaaa',
+        show: false,
         list: {
             a: 'hahaha',
             items: [1,2,3,4],
@@ -13,8 +14,8 @@ let fen = new Mv({
     },
     methods: {
         show($event) {
-            // $event.target.innerHTML = this.data.list.a;
-            console.log(arguments);
+            this.data.show = !this.data.show;
+            console.log(this.data.show);
         }
     }
 });

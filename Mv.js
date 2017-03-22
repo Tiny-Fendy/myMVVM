@@ -78,7 +78,7 @@
         });
     };
 
-    // 解析指令中的表达式, 返回data中的值
+    // 解析指令中的表达式, 返回解析的值
     Mv.prototype._getCompileValue = (value, data) => {
         if (value.includes('.') || value.includes('[')) {
 
@@ -159,7 +159,7 @@
      * fn: 检测到标签时执行的回调函数
      * */
 
-    Mv.prototype.directive =  (attr, fn) => {
+    Mv.directive =  (attr, fn) => {
         if (!self._directiveList.hasOwnProperty(attr)) self._directiveList[attr] = fn;
     };
 
@@ -183,19 +183,22 @@
      * data：作用域中的data
      * */
 
-    self.directive('f-show', (dom, attrVal, data) => {
+    Mv.directive('f-show', (dom, attrVal, data) => {
         self.registerDataChange(data, 'attr', () => dom.style.display = self._getCompileValue(attrVal, data) ? '' : 'none');
     });
 
-    self.directive('f-hide', (dom, attrVal, data) => {
+    Mv.directive('f-hide', (dom, attrVal, data) => {
         self.registerDataChange(data, 'attr', () => dom.style.display = self._getCompileValue(attrVal, data) ? 'none' : '');
     });
 
-    self.directive('f-if', (dom, attrVal, data) => {
+    Mv.directive('f-if', (dom, attrVal, data) => {
+        
         self.registerDataChange(data, 'attr', self._getCompileValue(attrVal, data) ? dom.style.display = true : dom.remove());
+
+
     });
 
-    self.directive('f-for', (dom, attrVal, data) => {
+    Mv.directive('f-for', (dom, attrVal, data) => {
         let attrString = attrVal.split('in'),
             item = attrString[0].replace(/\s/g, ''),
             items = attrString[1].replace(/\s/g, '');
@@ -226,38 +229,50 @@
     });
 
     // f-on，绑定DOM事件，PS：第二个参数是dom属性对象而不是的属性值,有别于其他标签
-    self.directive('on', (dom, attr, data) => {
+    Mv.directive('on', (dom, attr, data) => {
         let event = attr.name.split(':')[1], // 事件名称
             attrSplit = attr.value.split(/\(|,|\)/),
             method = attrSplit[0], // 方法名称
             inputList = attrSplit.slice(1, -1); // 入参列表
 
+        // 记录各种值所在的位置，事件发生时注入
+        let $eventIndex = -1;
+
+        // 解析入参，1-number、2-$event、3-string、4-直接变量、5-嵌套变量
+        // $event在事件出发后注入
+        inputList = inputList.map((input, index) => {
+            input = input.replace(' ', '');
+
+            if (!isNaN(Number(input))) {
+                return Number(input);
+            } else if (input === '$event') {
+                if ($eventIndex !== -1) {
+                    Mv.error('v-on--不能传入多个$event');
+                } else {
+                    $eventIndex = index;
+                }
+
+                return '$event';
+            } else if (input[0] === '\'' || input[0] === '\"') {
+                let start = input[0],
+                    end = input.substr(-1);
+
+                // 开头结尾均是'或者"，则为字符串
+                if (start === '\'' && end === '\'') {
+                    return input.split('\'')[1];
+                } else if (start === '\"' && end === '\"') {
+                    return input.split('\"')[1];
+                }
+            } else {
+                return self._getCompileValue(input, data);
+            }
+        });
+
         dom.addEventListener(event, e => {
             if (self._methods.hasOwnProperty(method)) {
-
-                // 解析入参，1-number、2-$event、3-string、4-直接变量、5-嵌套变量
-                inputList = inputList.map(input => {
-                    input = input.replace(' ', '');
-
-                    if (!isNaN(Number(input))) {
-                        return Number(input);
-                    } else if (input === '$event') {
-                        return e;
-                    } else if (input[0] === '\'' || input[0] === '\"') {
-                        let start = input[0],
-                            end = input.substr(-1);
-
-                        // 开头结尾均是'或者"，则为字符串
-                        if (start === '\'' && end === '\'') {
-                            return input.split('\'')[1];
-                        } else if (start === '\"' && end === '\"') {
-                            return input.split('\"')[1];
-                        }
-                    } else {
-                        return self._getCompileValue(input, data);
-                    }
-                });
-
+                if ($eventIndex !== -1) {
+                    inputList[$eventIndex] = e;
+                }
                 self._methods[method].apply(self, inputList);
             } else {
                 Mv.error('找不到方法--' + method);
@@ -311,12 +326,8 @@
 
     Mv.define('self',  () => Mv.prototype);
 
-    Mv.define('directive', () => {
-
-    });
-
     Mv.define('init', self => {
-        console.log(11111);
+
     });
 
     window.Mv = Mv;
