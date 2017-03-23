@@ -50,7 +50,7 @@
             let name = attr.name;
 
             if (name.includes('v-on')) {
-                self._directiveList.on(dom, attr, data);
+                self._directiveList['on'](dom, attr, data);
             } else if (self._directiveList.hasOwnProperty(name)) {
                 self._directiveList[name](dom, attr.value, data);
             }
@@ -192,18 +192,25 @@
     });
 
     Mv.directive('f-if', (dom, attrVal, data) => {
+        let state = true, // dom当前的状态
+            parent = dom.parentNode,
+            comment = document.createComment('f-if ' + attrVal), // 创建注释节点，用于标节点位置
+            fragment = document.createDocumentFragment();
 
-        // 记录节点
-        let fragment = document.createDocumentFragment();
+        dom.insertBefore(comment, null);
         fragment.appendChild(dom);
-
         self.registerDataChange(data, 'attr', () => {
-            if (self._getCompileValue(attrVal, data)) {
-
-                // 导入dom
-
-            } else {
+            if (state && !self._getCompileValue(attrVal, data)) { // 有节点，false
                 dom.remove();
+                state = false;
+            } else if (!state && self._getCompileValue(attrVal, data)) { // 没有节点，true
+                self._getDom(fragment.children[0], data);
+                if (parent.lastChild === comment) {
+                    parent.appendChild(fragment);
+                } else {
+                    comment.nextSibling.insertBefore(fragment, null);
+                }
+                state = true;
             }
         });
 
@@ -246,7 +253,7 @@
             method = attrSplit[0], // 方法名称
             inputList = attrSplit.slice(1, -1); // 入参列表
 
-        // 记录各种值所在的位置，事件发生时注入
+        // 记录$event所在的位置，事件发生时注入
         let $eventIndex = -1;
 
         // 解析入参，1-number、2-$event、3-string、4-直接变量、5-嵌套变量

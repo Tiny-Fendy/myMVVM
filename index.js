@@ -13,7 +13,7 @@ let fen = new Mv({
         num: 111
     },
     methods: {
-        show($event) {
+        show() {
             this.data.show = !this.data.show;
             console.log(this.data.show);
         }
