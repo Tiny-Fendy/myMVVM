@@ -107,7 +107,10 @@
         }
     };
 
-    //将data用Object.defineProperty代理一遍
+    /**
+     * 将data用Object.defineProperty代理一遍
+     * */
+
     Mv.prototype._defineProperty = (data, attr) => {
         let observerObj = {},
             obj = '',
@@ -184,11 +187,25 @@
      * */
 
     Mv.directive('f-show', (dom, attrVal, data) => {
-        self.registerDataChange(data, 'attr', () => dom.style.display = self._getCompileValue(attrVal, data) ? '' : 'none');
+        if (attrVal === 'false' || (!isNaN(Number(attrVal) && !Number(attrVal)))) {
+            dom.style.display = 'none';
+        } else {
+            self.registerDataChange(data, attrVal, () => {
+                dom.style.display = self._getCompileValue(attrVal, data) ? '' : 'none';
+            });
+            self._defineProperty(data, attrVal);
+        }
     });
 
     Mv.directive('f-hide', (dom, attrVal, data) => {
-        self.registerDataChange(data, 'attr', () => dom.style.display = self._getCompileValue(attrVal, data) ? 'none' : '');
+        if (attrVal === 'false' || (!isNaN(Number(attrVal) && !Number(attrVal)))) {
+            dom.style.display = '';
+        } else {
+            self.registerDataChange(data, attrVal, () => {
+                dom.style.display = self._getCompileValue(attrVal, data) ? 'none' : '';
+            });
+            self._defineProperty(data, attrVal);
+        }
     });
 
     Mv.directive('f-if', (dom, attrVal, data) => {
@@ -197,23 +214,31 @@
             comment = document.createComment('f-if ' + attrVal), // 创建注释节点，用于标节点位置
             fragment = document.createDocumentFragment();
 
-        dom.insertBefore(comment, null);
-        fragment.appendChild(dom);
-        self.registerDataChange(data, 'attr', () => {
-            if (state && !self._getCompileValue(attrVal, data)) { // 有节点，false
-                dom.remove();
-                state = false;
-            } else if (!state && self._getCompileValue(attrVal, data)) { // 没有节点，true
-                self._getDom(fragment.children[0], data);
-                if (parent.lastChild === comment) {
-                    parent.appendChild(fragment);
-                } else {
-                    comment.nextSibling.insertBefore(fragment, null);
-                }
-                state = true;
-            }
-        });
+        parent.insertBefore(comment, dom);
 
+        // 解析attrVal的值，是false或者0时删除dom，后续不会再有变化
+        if (attrVal === 'false' || (!isNaN(Number(attrVal) && !Number(attrVal)))) {
+            dom.remove();
+        } else {
+            self.registerDataChange(data, attrVal, () => {
+                if (state && !self._getCompileValue(attrVal, data)) { // 有节点，false
+                    comment.nextSibling.remove();
+                    state = false;
+                } else if (!state && self._getCompileValue(attrVal, data)) { // 没有节点，true
+                    let cloneDom = dom.cloneNode(true);
+
+                    fragment.appendChild(cloneDom);
+                    self._getDom(fragment.children[0], data);
+                    if (parent.lastChild === comment) {
+                        parent.appendChild(fragment);
+                    } else {
+                        parent.insertBefore(fragment, comment.nextSibling);
+                    }
+                    state = true;
+                }
+            });
+            self._defineProperty(data, attrVal);
+        }
     });
 
     Mv.directive('f-for', (dom, attrVal, data) => {
@@ -347,6 +372,44 @@
     Mv.define('init', self => {
 
     });
+
+    /**
+     * 对标签值进行编译，
+     * 两种模式：表达式、单个值
+     * 功能：返回编译后的值以及提取其中可能的变量
+     * attrValue：标签值
+     * */
+
+    class Compile {
+        constructor(attrValue) {
+
+        }
+        setValue(value, data, newValue)  {
+            if (value.includes('.') || value.includes('[')) {
+                eval('data.' + value + '= newValue');
+
+                // 用字符串解析的方式解析嵌套表达式
+                /*let valList = value.split('.'),
+                 then = valList.slice(0, -1).reduce((obj, val) => {
+
+                 return obj[val];
+                 }, data);
+
+                 then[valList[valList.length - 1]] = newValue;*/
+            } else {
+                data[value] = newValue;
+            }
+        }
+        getValue(value, data) {
+            if (value.includes('.') || value.includes('[')) {
+
+                return eval('data.' + value);
+            } else {
+
+                return data[value];
+            }
+        }
+    }
 
     window.Mv = Mv;
 })();

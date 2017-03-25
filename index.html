@@ -18,11 +18,11 @@
         <input type="text" f-model="fun">
         |||||||||||
         <br>
-        <span f-if="false">1+{{title}}+{{fun}}</span>
+        <span f-hide="false">1+{{title}}+{{fun}}</span>
         {{list.a}}
         <a type="button" v-on:click="show($event)">点击这里</a>
     </form>
-    <ul f-if="show">
+    <ul f-show="show">
         <li f-for="num in list.items"><span>{{num}}</span></li>
     </ul>
 </div>
