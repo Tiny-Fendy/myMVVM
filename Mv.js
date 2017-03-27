@@ -14,7 +14,8 @@
         self._dom = document.querySelector(self._el);
 
         // 处理data值
-        self.data = self._data = all.data || {};
+        self._data = all.data || {};
+        Object.assign(self, self._data);
 
         // 将methods定义的方法代理到实例化对象上
         self._methods = all.methods || {};
@@ -73,7 +74,7 @@
                 return self._getCompileValue(item, data);
             } else {
 
-                return  item;
+                return item;
             }
         });
     };
@@ -167,17 +168,7 @@
     };
 
     // 指令列表
-    Mv.prototype._directiveList = {
-        'f-model': (dom, attr, data) => {
-            dom.addEventListener('input', () => (self._dependList[attr] || []).forEach(() => self._setCompileValue(attr, data, dom.value)));
-            self.registerDataChange(data, attr, () => dom.value = self._getCompileValue(attr, data));
-            self._defineProperty(data, attr);
-        },
-
-        'f-text': (dom, attr, data) => {
-            self.registerDataChange(data, attr, () => dom.innerHTML = self._getCompileValue(attr, data));
-        }
-    };
+    Mv.prototype._directiveList = {};
 
     /**
      * 开始注册指令
@@ -185,6 +176,23 @@
      * attr：指令的值
      * data：作用域中的data
      * */
+
+    Mv.directive('f-model', (dom, attrVal, data) => {
+        let dependList = self._dependList[attrVal];
+
+        if (!dependList) {
+            Mv.error('f-model: 未找到绑定的字段！');
+
+            return false;
+        }
+        dom.addEventListener('input', () => dependList.forEach(() => self._setCompileValue(attrVal, data, dom.value)));
+        self.registerDataChange(data, attrVal, () => dom.value = self._getCompileValue(attrVal, data));
+        self._defineProperty(data, attrVal);
+    });
+
+    Mv.directive('f-text', (dom, attrVal, data) => {
+        self.registerDataChange(data, attrVal, () => dom.innerHTML = self._getCompileValue(attrVal, data));
+    });
 
     Mv.directive('f-show', (dom, attrVal, data) => {
         if (attrVal === 'false' || (!isNaN(Number(attrVal) && !Number(attrVal)))) {
@@ -253,6 +261,10 @@
             items = data[items];
         }
         if (items instanceof Array) {
+
+            // 劫持数据监控数组改变
+
+
             items.forEach((val, i) => {
                 let node = dom.cloneNode(true);
 
@@ -289,11 +301,7 @@
             if (!isNaN(Number(input))) {
                 return Number(input);
             } else if (input === '$event') {
-                if ($eventIndex !== -1) {
-                    Mv.error('v-on--不能传入多个$event');
-                } else {
-                    $eventIndex = index;
-                }
+                $eventIndex !== -1 ? Mv.error('v-on--不能传入多个$event') : $eventIndex = index;
 
                 return '$event';
             } else if (input[0] === '\'' || input[0] === '\"') {
@@ -313,9 +321,7 @@
 
         dom.addEventListener(event, e => {
             if (self._methods.hasOwnProperty(method)) {
-                if ($eventIndex !== -1) {
-                    inputList[$eventIndex] = e;
-                }
+                if ($eventIndex !== -1) inputList[$eventIndex] = e;
                 self._methods[method].apply(self, inputList);
             } else {
                 Mv.error('找不到方法--' + method);
@@ -372,6 +378,23 @@
     Mv.define('init', self => {
 
     });
+
+    /**
+     * 劫持数组对数组进行监控
+     * */
+
+    class ArrayObseve {
+        constructor(array = [], callBack = () => {}) {
+            this.array = array;
+            this.fn = callBack;
+
+            // 支持的数组异变方法
+            this.type = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'];
+        }
+        observe() {
+
+        }
+    }
 
     /**
      * 对标签值进行编译，
